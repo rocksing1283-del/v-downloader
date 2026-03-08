@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tony Jamer Stark - V-Downloader Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            /* Moving Gradient Background Retained */
+            background: linear-gradient(-45deg, #FF512F, #DD2476, #1A2980, #26D0CE);
+            background-size: 400% 400%;
+            animation: gradientBG 12s ease infinite;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between; /* Important for Footer positioning */
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Pure Glassmorphism Card - Updated Max-Width for Responsiveness */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            width: 100%;
+            max-width: 550px; /* Wider for Desktop/Laptop */
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            margin-top: auto; /* Push center */
+            margin-bottom: auto; /* Push center */
+        }
+
+        /* Responsive padding adjust */
+        @media (min-width: 768px) {
+            .glass-card { padding: 50px 40px; }
+        }
+
+        /* Header */
+        h2 {
+            font-weight: 700;
+            font-size: 26px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+            font-weight: 400;
+            background: rgba(0,0,0,0.25);
+            padding: 6px 18px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .subtitle span {
+            font-weight: 600;
+            color: #FFD700; /* Gold color maintained for name */
+        }
+
+        /* Floating Tabs System */
+        .switch-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 50px;
+            padding: 7px;
+            display: flex;
+            margin-bottom: 30px;
+            max-width: 350px; /* Desktop width limit for tabs */
+            margin-left: auto; margin-right: auto;
+        }
+
+        .switch-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 50px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .switch-btn.active {
+            background: white;
+            color: #DD2476;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+        }
+
+        /* Modern Input - Professionalized */
+        .input-wrapper {
+            margin-bottom: 25px;
+            max-width: 450px;
+            margin-left: auto; margin-right: auto;
+        }
+
+        input {
+            width: 100%;
+            padding: 18px 25px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.08);
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        input::placeholder { color: rgba(255,255,255,0.5); }
+
+        input:focus {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.5);
+            box-shadow: 0 0 25px rgba(255,255,255,0.1);
+        }
+
+        /* Loading Spinner */
+        .loader {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 30px auto;
+        }
+
+        /* Result Area System */
+        .result-box {
+            display: none;
+            animation: slideUp 0.6s ease;
+        }
+
+        /* Responsive Layout for Thumbnail & Info */
+        @media (min-width: 768px) {
+            .media-content {
+                display: flex;
+                gap: 25px;
+                text-align: left;
+                align-items: center;
+                margin-bottom: 30px;
+            }
+        }
+
+        .thumb-box {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+            position: relative;
+            margin-bottom: 20px; /* Mobile spacing */
+            max-width: 320px;
+            margin-left: auto; margin-right: auto;
+        }
+        
+        @media (min-width: 768px) {
+            .thumb-box { margin-bottom: 0; flex: 1; max-width: none; }
+        }
+
+        .thumb-box img { width: 100%; display: block; }
+        
+        .title-meta-area {
+            flex: 1.5;
+            text-align: center;
+        }
+        @media (min-width: 768px) {
+            .title-meta-area { text-align: left; }
+        }
+
+        /* Video Title */
+        .video-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        @media (min-width: 768px) { .video-title { font-size: 17px; margin-bottom: 0; } }
+
+        /* Pills Grid System - Professionally adjusted for responsiveness */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Mobile */
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .options-grid { grid-template-columns: 1fr 1fr 1fr; } /* Desktop/Laptop */
+        }
+
+        .pill {
+            padding: 15px 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .pill:hover { background: rgba(255,255,255,0.2); }
+
+        .pill.selected {
+            background: white;
+            color: #333;
+            border-color: white;
+            box-shadow: 0 8px 25px rgba(255,255,255,0.35);
+            transform: translateY(-3px);
+        }
+
+        .pill .q-text { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .pill .size-text { font-size: 12px; opacity: 0.7; font-weight: 400; }
+        .pill.selected .size-text { color: #555; opacity: 1; }
+
+        /* Big Download Button - Max Width Added */
+        .dl-btn {
+            display: none;
+            width: 100%;
+            max-width: 350px; /* Limit on Desktop */
+            margin-left: auto; margin-right: auto;
+            padding: 18px;
+            border: none;
+            border-radius: 50px;
+            background: white;
+            color: #DD2476;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dl-btn:active { transform: scale(0.96); }
+
+        /* Custom Popup System */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup {
+            background: white;
+            color: #333;
+            padding: 35px;
+            border-radius: 25px;
+            width: 85%;
+            max-width: 380px;
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .popup h3 { color: #DD2476; margin-bottom: 12px; font-size: 22px; font-weight: 700; }
+        .popup p { font-size: 14px; color: #555; margin-bottom: 25px; line-height: 1.6; }
+        
+        .popup-btn {
+            background: #DD2476;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        /* *************************************************************** */
+        /* FOOOTER SECTION WITH OCEAN WAVE ANIMATION ON NAME */
+        /* *************************************************************** */
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 1px;
+            width: 100%;
+            padding: 15px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* SVG Container for the Name Animation */
+        .wave-name-svg {
+            width: 250px; /* Desktop width for name */
+            height: 40px; /* Height for animation to breathe */
+        }
+        
+        /* Smaller SVG on Mobile */
+        @media (max-width: 767px) {
+            .wave-name-svg { width: 180px; height: 35px; }
+        }
+
+        /* Styling the Text within SVG */
+        .wave-name-svg text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 20px; /* Scaled down base size */
+            letter-spacing: 0px;
+            text-transform: uppercase;
+            fill: none; /* Text has no outline fill */
+            stroke: rgba(255, 255, 255, 0.3); /* Base stroke retained */
+            stroke-width: 1px;
+        }
+        @media (min-width: 768px) { .wave-name-svg text { font-size: 24px; } }
+
+        /* The Animated Ocean Fill Image as Mask */
+        .wave-name-svg .animated-fill {
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'%3E%3Cpath d='M0 15 c 30 0, 30 15, 60 15 c 30 0, 30 -15, 60 -15 v 25 h -120 z' fill='%23fff'/%3E%3Cpath d='M0 10 c 30 0, 30 15, 60 15 c 30 0, 30 -15, 60 -15 v 30 h -120 z' fill='rgba(255,255,255,0.5)'/%3E%3Cpath d='M0 20 c 30 0, 30 15, 60 15 c 30 0, 30 -15, 60 -15 v 20 h -120 z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E") repeat-x;
+            background-size: 120px 40px; /* wave pattern dimensions */
+            background-position: 0 40px; /* start below text */
+            
+            /* The Core Masking Technique */
+            -webkit-background-clip: text;
+            background-clip: text;
+            fill: rgba(0,0,0,0); /* Transparent fill, mask shows bg */
+            color: transparent; /* fallback */
+            
+            /* Apply ocean color gradient and the mask together */
+            background-color: #26D0CE; /* Ocean cyan fallback */
+            background-image: linear-gradient(to top, #1A2980, #26D0CE);
+
+            /* Multi-layer Wave Animation */
+            animation: oceanWave 12s ease-in-out infinite, waterFill 6s forwards ease-out;
+            animation-delay: 0.5s; /* delay start */
+        }
+
+        /* Ocean Wave Motion (horizontal and slightly vertical) */
+        @keyframes oceanWave {
+            0%, 100% { background-position: 0% 18px; }
+            50% { background-position: 100% 12px; } /* lehar moving right & up */
+        }
+
+        /* Liquid Fill effect (water rising) */
+        @keyframes waterFill {
+            from { background-position-y: 40px; opacity: 0; }
+            to { background-position-y: 18px; opacity: 1; } /* Final level in text */
+        }
+
+        /* Extra stroke effect for clarity when not filled */
+        .wave-text-stroke {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 1px;
+            animation: strokeFade 2s forwards;
+            animation-delay: 1.5s;
+        }
+        @keyframes strokeFade { to { stroke: rgba(255, 255, 255, 0.1); } }
+
+        /* General Animations */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="glass-card">
+        <h2>V-DOWNLOADER</h2>
+        <div class="subtitle">By <span>Tony Jamer Stark</span> | 100% Free Tool</div>
+
+        <div class="switch-container">
+            <button class="switch-btn active" id="yt-btn" onclick="setMode('yt')">YouTube</button>
+            <button class="switch-btn" id="ig-btn" onclick="setMode('ig')">Instagram</button>
+        </div>
+
+        <div class="input-wrapper">
+            <input type="text" id="url-in" placeholder="Paste media link here..." oninput="checkInput()">
+        </div>
+
+        <div class="loader" id="loader"></div>
+
+        <div class="result-box" id="result">
+            <div class="media-content">
+                <div class="thumb-box">
+                    <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Preview">
+                </div>
+                
+                <div class="title-meta-area">
+                    <div class="video-title" id="vid-title">Analyzing Media Link...</div>
+                </div>
+            </div>
+
+            <div class="options-grid" id="pills-area">
+                </div>
+
+            <button class="dl-btn" id="dl-action" onclick="showPopup()">
+                Process Download <i class="fa-solid fa-download"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>Developed & Managed by</div>
+        
+        <svg class="wave-name-svg" viewBox="0 0 300 40">
+            <defs>
+                <mask id="textMask">
+                    <text x="50%" y="30" text-anchor="middle">Tony Jamer Stark</text>
+                </mask>
+            </defs>
+            
+            <text x="50%" y="30" text-anchor="middle" class="wave-text-stroke">Tony Jamer Stark</text>
+            
+            <text x="50%" y="30" text-anchor="middle" class="animated-fill">Tony Jamer Stark</text>
+        </svg>
+    </div>
+
+    <div class="popup-overlay" id="popup">
+        <div class="popup">
+            <h3><i class="fa-solid fa-circle-check"></i> System Initialized</h3>
+            <p>The requested media format has been processed successfully. Connecting to the backend stream to begin transmission.</p>
+            <button class="popup-btn" onclick="closePopup()">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <script>
+        let mode = 'yt';
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('yt-btn').className = m === 'yt' ? 'switch-btn active' : 'switch-btn';
+            document.getElementById('ig-btn').className = m === 'ig' ? 'switch-btn active' : 'switch-btn';
+            
+            document.getElementById('url-in').value = '';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        function checkInput() {
+            let val = document.getElementById('url-in').value;
+            document.getElementById('result').style.display = 'none';
+            
+            if(val.length > 5) {
+                document.getElementById('loader').style.display = 'block';
+                
+                // Simulate Backend Fetch (Faster for professionalism)
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                    
+                    // Set Responsive Title
+                    if(mode === 'yt') {
+                        document.getElementById('vid-title').innerText = "V-Core Pro: Advanced JavaScript Techniques | 2026 Masterclass";
+                    } else {
+                        document.getElementById('vid-title').innerText = "Instagram Reel: Ultimate Desk Setup & Cyber Vibe";
+                    }
+
+                    renderPills();
+                    document.getElementById('result').style.display = 'block';
+                }, 900);
+            }
+        }
+
+        function renderPills() {
+            let area = document.getElementById('pills-area');
+            area.innerHTML = '';
+            
+            if(mode === 'yt') {
+                area.innerHTML = `
+                    <div class="pill" onclick="select(this)">
+                        <span class="q-text">1080p HD</span>
+                        <span class="size-text">~45 MB</span>
+                    </div>
+                    <div class="pill" onclick="select(this)">
+                        <span class="q-text">720p HQ</span>
+                        <span class="size-text">~22 MB</span>
+                    </div>
+                    <div class="pill" onclick="select(this)">
+                        <span class="q-text">480p SD</span>
+                        <span class="size-text">~12 MB</span>
+                    </div>
+                    <div class="pill" onclick="select(this)">
+                        <span class="q-text"><i class="fa-solid fa-music"></i> MP3</span>
+                        <span class="size-text">~4.5 MB</span>
+                    </div>
+                    <div class="pill" onclick="select(this)">
+                        <span class="q-text"><i class="fa-solid fa-music"></i> M4A</span>
+                        <span class="size-text">~3.2 MB</span>
+                    </div>
+                `;
+            } else {
+                area.innerHTML = `
+                    <div class="pill" onclick="select(this)">
+                        <span class="q-text">High Res</span>
+                        <span class="size-text">~18 MB</span>
+                    </div>
+                    <div class="pill" onclick="select(this)">
+                        <span class="q-text">Standard</span>
+                        <span class="size-text">~7.5 MB</span>
+                    </div>
+                    <div class="pill" onclick="select(this)">
+                        <span class="q-text"><i class="fa-solid fa-music"></i> Extract Audio</span>
+                        <span class="size-text">~1.8 MB</span>
+                    </div>
+                `;
+            }
+        }
+
+        function select(el) {
+            document.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('dl-action').style.display = 'flex'; // Use flex for center max-width
+        }
+
+        function showPopup() {
+            document.getElementById('popup').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+    </script>
+</body>
+  </html>
