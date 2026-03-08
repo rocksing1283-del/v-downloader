@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +12,6 @@
         body { background: linear-gradient(-45deg, #FF512F, #DD2476, #1A2980, #26D0CE); background-size: 400% 400%; animation: gradientBG 12s ease infinite; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 100vh; padding: 20px; color: white; overflow-x: hidden; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
-        /* Glassmorphism Card */
         .glass-card { background: rgba(255, 255, 255, 0.12); box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.3); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.15); width: 100%; max-width: 550px; padding: 40px 30px; text-align: center; margin-top: auto; margin-bottom: auto; }
         @media (min-width: 768px) { .glass-card { padding: 50px 40px; } }
         
@@ -40,7 +38,7 @@
         
         .title-meta-area { flex: 1.5; text-align: center; }
         @media (min-width: 768px) { .title-meta-area { text-align: left; } }
-        .video-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; line-height: 1.4; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .video-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; line-height: 1.4; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;}
         @media (min-width: 768px) { .video-title { font-size: 17px; margin-bottom: 0; } }
         
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
@@ -68,6 +66,16 @@
         @keyframes strokeFade { to { stroke: rgba(255, 255, 255, 0.1); } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Popup Re-Styled for Errors & Success */
+        .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; }
+        .popup { background: white; color: #333; padding: 35px; border-radius: 25px; width: 85%; max-width: 380px; text-align: center; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .popup h3 { margin-bottom: 12px; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .popup p { font-size: 14px; color: #555; margin-bottom: 25px; line-height: 1.6; word-wrap: break-word;}
+        .popup-btn { color: white; border: none; padding: 12px 35px; border-radius: 50px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.3s; }
+        .popup-btn:active { transform: scale(0.95); }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
     </style>
 </head>
 <body>
@@ -115,11 +123,42 @@
         </svg>
     </div>
 
+    <div class="popup-overlay" id="popup">
+        <div class="popup">
+            <h3 id="popup-title">Title Here</h3>
+            <p id="popup-msg">Message goes here</p>
+            <button class="popup-btn" id="popup-btn" onclick="closePopup()">OKAY</button>
+        </div>
+    </div>
+
     <script>
         let mode = 'yt';
-        // Yahan aapka REAL Backend API Link lag gaya hai!
         const API_BASE = "https://v-api-engine.onrender.com/api/extract?url=";
         let directDownloadLink = "";
+
+        // Smart Popup Function 
+        function showModal(title, message, isError = false) {
+            let titleEl = document.getElementById('popup-title');
+            let msgEl = document.getElementById('popup-msg');
+            let btnEl = document.getElementById('popup-btn');
+
+            if(isError) {
+                titleEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${title}`;
+                titleEl.style.color = "#FF3B30"; // Red Error Color
+                btnEl.style.background = "#FF3B30";
+            } else {
+                titleEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${title}`;
+                titleEl.style.color = "#DD2476"; // Premium Pink Color
+                btnEl.style.background = "#DD2476";
+            }
+
+            msgEl.innerText = message;
+            document.getElementById('popup').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
 
         function setMode(m) {
             mode = m;
@@ -129,41 +168,55 @@
             document.getElementById('url-in').value = '';
             document.getElementById('result').style.display = 'none';
             document.getElementById('loader').style.display = 'none';
+            document.getElementById('url-in').focus();
         }
 
         async function checkInput() {
-            let val = document.getElementById('url-in').value;
+            let val = document.getElementById('url-in').value.trim();
             document.getElementById('result').style.display = 'none';
             document.getElementById('dl-action').style.display = 'none';
             
-            // Basic link format check
-            if(val.length > 10 && (val.includes("youtu") || val.includes("instagram"))) {
-                document.getElementById('loader').style.display = 'block';
+            if(val.length < 5) return;
+
+            // SMART LINK DETECTION
+            let isValid = false;
+            if(mode === 'yt' && (val.includes("youtu.be") || val.includes("youtube.com"))) {
+                isValid = true;
+            } else if(mode === 'ig' && val.includes("instagram.com")) {
+                isValid = true;
+            }
+
+            // Agar link platform se match na kare
+            if(!isValid) {
+                let platformName = mode === 'yt' ? 'YouTube' : 'Instagram';
+                showModal("Invalid Link", `Bhai, ye link ${platformName} ka nahi lag raha hai. Kripya sahi link paste karein.`, true);
+                document.getElementById('url-in').value = ""; // Clear box
+                return;
+            }
+
+            // Link sahi hai, toh aage badho
+            document.getElementById('loader').style.display = 'block';
+            
+            try {
+                let response = await fetch(API_BASE + encodeURIComponent(val));
+                let data = await response.json();
                 
-                try {
-                    // API ko link bhejna aur wait karna
-                    let response = await fetch(API_BASE + encodeURIComponent(val));
-                    let data = await response.json();
+                document.getElementById('loader').style.display = 'none';
+                
+                if(data.success) {
+                    document.getElementById('vid-title').innerText = data.data.title;
+                    document.getElementById('vid-thumb').src = data.data.thumbnail;
+                    directDownloadLink = data.data.download_link;
                     
-                    document.getElementById('loader').style.display = 'none';
-                    
-                    if(data.success) {
-                        // API se Asli Details nikal kar UI me lagana
-                        document.getElementById('vid-title').innerText = data.data.title;
-                        document.getElementById('vid-thumb').src = data.data.thumbnail;
-                        
-                        // Download link save karna
-                        directDownloadLink = data.data.download_link;
-                        
-                        renderPills();
-                        document.getElementById('result').style.display = 'block';
-                    } else {
-                        alert("Oops! Video fetch nahi ho paya. URL check karo.");
-                    }
-                } catch(error) {
-                    document.getElementById('loader').style.display = 'none';
-                    alert("Backend server abhi shuru ho raha hai ya error aa gaya. Thodi der me try karein.");
+                    renderPills();
+                    document.getElementById('result').style.display = 'block';
+                } else {
+                    // API ne error diya hai
+                    showModal("Fetch Failed", `Video nikalne me problem hui: ${data.error}`, true);
                 }
+            } catch(error) {
+                document.getElementById('loader').style.display = 'none';
+                showModal("Server Timeout", "Backend engine abhi sleep mode se jaag raha hai ya network issue hai. Kripya 15 second baad fir se link paste karein.", true);
             }
         }
 
@@ -171,17 +224,11 @@
             let area = document.getElementById('pills-area');
             area.innerHTML = '';
             
-            // Note: Kyunki hamara free server abhi sirf "Best Quality" URL deta hai, 
-            // ye pills UI ko professional dikhane ke liye hain.
             if(mode === 'yt') {
                 area.innerHTML = `
                     <div class="pill" onclick="select(this)">
                         <span class="q-text">Best Quality</span>
                         <span class="size-text">Direct MP4</span>
-                    </div>
-                    <div class="pill" onclick="select(this)">
-                        <span class="q-text"><i class="fa-solid fa-music"></i> Audio Mode</span>
-                        <span class="size-text">Coming Soon</span>
                     </div>
                 `;
             } else {
@@ -202,10 +249,9 @@
 
         function startRealDownload() {
             if(directDownloadLink) {
-                // Ye command naye tab me actual video download link open kar dega
                 window.open(directDownloadLink, '_blank');
             } else {
-                alert("Download link ready nahi hai.");
+                showModal("Link Error", "Download link abhi tak ready nahi hui hai.", true);
             }
         }
     </script>
