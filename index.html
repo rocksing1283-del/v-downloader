@@ -133,6 +133,7 @@
 
     <script>
         let mode = 'yt';
+        // Backend API Link
         const API_BASE = "https://v-api-engine.onrender.com/api/extract?url=";
         let directDownloadLink = "";
 
@@ -211,7 +212,6 @@
                     renderPills();
                     document.getElementById('result').style.display = 'block';
                 } else {
-                    // API ne error diya hai
                     showModal("Fetch Failed", `Video nikalne me problem hui: ${data.error}`, true);
                 }
             } catch(error) {
@@ -249,7 +249,15 @@
 
         function startRealDownload() {
             if(directDownloadLink) {
-                window.open(directDownloadLink, '_blank');
+                // Ye Popup show karega ki download start ho raha hai
+                showModal("Downloading...", "Aapka file download hona shuru ho gaya hai. Notification panel check karein.", false);
+                
+                // FORCE DOWNLOAD LOGIC VIA BACKEND
+                let videoTitle = document.getElementById('vid-title').innerText;
+                let forceDownloadUrl = "https://v-api-engine.onrender.com/api/download?url=" + encodeURIComponent(directDownloadLink) + "&title=" + encodeURIComponent(videoTitle);
+                
+                // Browser ko download link par redirect karna
+                window.location.href = forceDownloadUrl; 
             } else {
                 showModal("Link Error", "Download link abhi tak ready nahi hui hai.", true);
             }
