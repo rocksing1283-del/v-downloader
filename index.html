@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer"> 
     <title>Tony Jamer Stark - V-Downloader Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -34,7 +35,7 @@
         @media (min-width: 768px) { .media-content { display: flex; gap: 25px; text-align: left; align-items: center; margin-bottom: 30px; } }
         .thumb-box { border-radius: 20px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,0.3); margin-bottom: 20px; max-width: 320px; margin-left: auto; margin-right: auto; }
         @media (min-width: 768px) { .thumb-box { margin-bottom: 0; flex: 1; max-width: none; } }
-        .thumb-box img { width: 100%; display: block; }
+        .thumb-box img { width: 100%; display: block; object-fit: cover; }
         
         .title-meta-area { flex: 1.5; text-align: center; }
         @media (min-width: 768px) { .title-meta-area { text-align: left; } }
@@ -53,7 +54,6 @@
         .dl-btn { display: none; width: 100%; max-width: 350px; margin-left: auto; margin-right: auto; padding: 18px; border: none; border-radius: 50px; background: white; color: #DD2476; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.25); transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .dl-btn:active { transform: scale(0.96); }
         
-        /* Footer Animation Settings */
         .footer { margin-top: 30px; text-align: center; font-size: 13px; color: rgba(255,255,255,0.7); letter-spacing: 1px; width: 100%; padding: 15px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .wave-name-svg { width: 250px; height: 40px; }
         @media (max-width: 767px) { .wave-name-svg { width: 180px; height: 35px; } }
@@ -67,7 +67,6 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Custom Popup Re-Styled for Errors & Success */
         .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; }
         .popup { background: white; color: #333; padding: 35px; border-radius: 25px; width: 85%; max-width: 380px; text-align: center; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .popup h3 { margin-bottom: 12px; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -98,15 +97,14 @@
         <div class="result-box" id="result">
             <div class="media-content">
                 <div class="thumb-box">
-                    <img id="vid-thumb" src="" alt="Thumbnail">
+                    <img id="vid-thumb" src="" alt="Thumbnail Loading...">
                 </div>
                 <div class="title-meta-area">
                     <div class="video-title" id="vid-title">Loading...</div>
                 </div>
             </div>
 
-            <div class="options-grid" id="pills-area">
-                </div>
+            <div class="options-grid" id="pills-area"></div>
 
             <button class="dl-btn" id="dl-action" onclick="startRealDownload()">
                 Process Download <i class="fa-solid fa-download"></i>
@@ -133,11 +131,8 @@
 
     <script>
         let mode = 'yt';
-        // Backend API Link
-        const API_BASE = "https://v-api-engine.onrender.com/api/extract?url=";
         let directDownloadLink = "";
 
-        // Smart Popup Function 
         function showModal(title, message, isError = false) {
             let titleEl = document.getElementById('popup-title');
             let msgEl = document.getElementById('popup-msg');
@@ -145,11 +140,11 @@
 
             if(isError) {
                 titleEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${title}`;
-                titleEl.style.color = "#FF3B30"; // Red Error Color
+                titleEl.style.color = "#FF3B30"; 
                 btnEl.style.background = "#FF3B30";
             } else {
                 titleEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${title}`;
-                titleEl.style.color = "#DD2476"; // Premium Pink Color
+                titleEl.style.color = "#DD2476"; 
                 btnEl.style.background = "#DD2476";
             }
 
@@ -157,15 +152,12 @@
             document.getElementById('popup').style.display = 'flex';
         }
 
-        function closePopup() {
-            document.getElementById('popup').style.display = 'none';
-        }
+        function closePopup() { document.getElementById('popup').style.display = 'none'; }
 
         function setMode(m) {
             mode = m;
             document.getElementById('yt-btn').className = m === 'yt' ? 'switch-btn active' : 'switch-btn';
             document.getElementById('ig-btn').className = m === 'ig' ? 'switch-btn active' : 'switch-btn';
-            
             document.getElementById('url-in').value = '';
             document.getElementById('result').style.display = 'none';
             document.getElementById('loader').style.display = 'none';
@@ -179,65 +171,71 @@
             
             if(val.length < 5) return;
 
-            // SMART LINK DETECTION
             let isValid = false;
-            if(mode === 'yt' && (val.includes("youtu.be") || val.includes("youtube.com"))) {
+            if(mode === 'yt' && (val.includes("youtu.be") || val.includes("youtube.com") || val.includes("shorts"))) {
                 isValid = true;
             } else if(mode === 'ig' && val.includes("instagram.com")) {
                 isValid = true;
             }
 
-            // Agar link platform se match na kare
             if(!isValid) {
                 let platformName = mode === 'yt' ? 'YouTube' : 'Instagram';
                 showModal("Invalid Link", `Bhai, ye link ${platformName} ka nahi lag raha hai. Kripya sahi link paste karein.`, true);
-                document.getElementById('url-in').value = ""; // Clear box
+                document.getElementById('url-in').value = "";
                 return;
             }
 
-            // Link sahi hai, toh aage badho
             document.getElementById('loader').style.display = 'block';
             
             try {
-                let response = await fetch(API_BASE + encodeURIComponent(val));
-                let data = await response.json();
+                // THE MASTER STROKE: Using Cobalt API directly from Frontend
+                let response = await fetch("https://api.cobalt.tools/api/json", {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: val,
+                        vQuality: "720", 
+                        filenamePattern: "classic"
+                    })
+                });
                 
+                let data = await response.json();
                 document.getElementById('loader').style.display = 'none';
                 
-                if(data.success) {
-                    document.getElementById('vid-title').innerText = data.data.title;
-                    document.getElementById('vid-thumb').src = data.data.thumbnail;
-                    directDownloadLink = data.data.download_link;
+                if(data.url) {
+                    directDownloadLink = data.url;
+                    
+                    if(mode === 'yt') {
+                        let videoIdMatch = val.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*v%3D))([\w-]{11})/);
+                        let vId = videoIdMatch ? videoIdMatch[1] : '';
+                        document.getElementById('vid-title').innerText = "YouTube Video Ready for Download";
+                        document.getElementById('vid-thumb').src = vId ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg` : "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=600&q=80";
+                    } else {
+                        document.getElementById('vid-title').innerText = "Instagram Media Ready";
+                        document.getElementById('vid-thumb').src = "https://images.unsplash.com/photo-1611224923853-80b023f02d71?auto=format&fit=crop&w=600&q=80"; // Stylish generic image
+                    }
                     
                     renderPills();
                     document.getElementById('result').style.display = 'block';
-                } else {
-                    showModal("Fetch Failed", `Video nikalne me problem hui: ${data.error}`, true);
+                } else if (data.status === "error") {
+                    showModal("Fetch Failed", `Error: ${data.text || "Video nahi nikal paya."}`, true);
                 }
             } catch(error) {
                 document.getElementById('loader').style.display = 'none';
-                showModal("Server Timeout", "Backend engine abhi sleep mode se jaag raha hai ya network issue hai. Kripya 15 second baad fir se link paste karein.", true);
+                showModal("Network Error", "Internet check karein ya thodi der baad try karein.", true);
             }
         }
 
         function renderPills() {
             let area = document.getElementById('pills-area');
             area.innerHTML = '';
-            
             if(mode === 'yt') {
-                area.innerHTML = `
-                    <div class="pill" onclick="select(this)">
-                        <span class="q-text">Best Quality</span>
-                        <span class="size-text">Direct MP4</span>
-                    </div>
-                `;
+                area.innerHTML = `<div class="pill" onclick="select(this)"><span class="q-text">Best Quality</span><span class="size-text">Direct MP4</span></div>`;
             } else {
-                area.innerHTML = `
-                    <div class="pill" onclick="select(this)">
-                        <span class="q-text">High Res</span>
-                        <span class="size-text">Direct MP4</span>
-                    </div>
-                `;
+                area.innerHTML = `<div class="pill" onclick="select(this)"><span class="q-text">High Res</span><span class="size-text">Direct MP4</span></div>`;
             }
         }
 
@@ -249,19 +247,12 @@
 
         function startRealDownload() {
             if(directDownloadLink) {
-                // Ye Popup show karega ki download start ho raha hai
-                showModal("Downloading...", "Aapka file download hona shuru ho gaya hai. Notification panel check karein.", false);
-                
-                // FORCE DOWNLOAD LOGIC VIA BACKEND
-                let videoTitle = document.getElementById('vid-title').innerText;
-                let forceDownloadUrl = "https://v-api-engine.onrender.com/api/download?url=" + encodeURIComponent(directDownloadLink) + "&title=" + encodeURIComponent(videoTitle);
-                
-                // Browser ko download link par redirect karna
-                window.location.href = forceDownloadUrl; 
+                showModal("Downloading...", "Aapka file download hona shuru ho gaya hai.", false);
+                window.location.href = directDownloadLink; 
             } else {
-                showModal("Link Error", "Download link abhi tak ready nahi hui hai.", true);
+                showModal("Link Error", "Download link ready nahi hai.", true);
             }
         }
     </script>
 </body>
-</html>
+    </html>
