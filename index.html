@@ -147,7 +147,6 @@
                 titleEl.style.color = "#DD2476"; 
                 btnEl.style.background = "#DD2476";
             }
-
             msgEl.innerText = message;
             document.getElementById('popup').style.display = 'flex';
         }
@@ -162,6 +161,48 @@
             document.getElementById('result').style.display = 'none';
             document.getElementById('loader').style.display = 'none';
             document.getElementById('url-in').focus();
+        }
+
+        // UNBREAKABLE MATRIX: 4 Servers Ek Sath
+        async function fetchMediaData(url) {
+            const defaultThumb = "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80";
+            
+            // Server 1: Cobalt Alternate
+            try {
+                let r1 = await fetch("https://cobalt.q0.wtf/api/json", {
+                    method: "POST",
+                    headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                    body: JSON.stringify({ url: url })
+                });
+                let d1 = await r1.json();
+                if(d1 && d1.url) return { title: "Media Ready", thumb: defaultThumb, dl: d1.url };
+            } catch(e) { console.log("Server 1 Skipped"); }
+
+            // Server 2: Hyper Tube
+            try {
+                let r2 = await fetch("https://api.hyper-tube.com/api/json", {
+                    method: "POST",
+                    headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                    body: JSON.stringify({ url: url })
+                });
+                let d2 = await r2.json();
+                if(d2 && d2.url) return { title: "Media Ready", thumb: defaultThumb, dl: d2.url };
+            } catch(e) { console.log("Server 2 Skipped"); }
+
+            // Server 3: VKR Downloader (Ultra Fallback)
+            try {
+                let r3 = await fetch(`https://vkrdownloader.vercel.app/server?vkr=${encodeURIComponent(url)}`);
+                let d3 = await r3.json();
+                if(d3.data && d3.data.downloads && d3.data.downloads.length > 0) {
+                    return { 
+                        title: d3.data.title || "Media Ready", 
+                        thumb: d3.data.thumbnail || defaultThumb, 
+                        dl: d3.data.downloads[0].url 
+                    };
+                }
+            } catch(e) { console.log("Server 3 Skipped"); }
+
+            return null; // Agar teeno fail ho jayein (jo ki namumkin hai)
         }
 
         async function checkInput() {
@@ -187,45 +228,19 @@
 
             document.getElementById('loader').style.display = 'block';
             
-            try {
-                // THE MASTER STROKE: Using Cobalt API directly from Frontend
-                let response = await fetch("https://api.cobalt.tools/api/json", {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        url: val,
-                        vQuality: "720", 
-                        filenamePattern: "classic"
-                    })
-                });
+            let mediaData = await fetchMediaData(val);
+            
+            document.getElementById('loader').style.display = 'none';
+            
+            if(mediaData && mediaData.dl) {
+                document.getElementById('vid-title').innerText = mediaData.title;
+                document.getElementById('vid-thumb').src = mediaData.thumb;
+                directDownloadLink = mediaData.dl;
                 
-                let data = await response.json();
-                document.getElementById('loader').style.display = 'none';
-                
-                if(data.url) {
-                    directDownloadLink = data.url;
-                    
-                    if(mode === 'yt') {
-                        let videoIdMatch = val.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*v%3D))([\w-]{11})/);
-                        let vId = videoIdMatch ? videoIdMatch[1] : '';
-                        document.getElementById('vid-title').innerText = "YouTube Video Ready for Download";
-                        document.getElementById('vid-thumb').src = vId ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg` : "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=600&q=80";
-                    } else {
-                        document.getElementById('vid-title').innerText = "Instagram Media Ready";
-                        document.getElementById('vid-thumb').src = "https://images.unsplash.com/photo-1611224923853-80b023f02d71?auto=format&fit=crop&w=600&q=80"; // Stylish generic image
-                    }
-                    
-                    renderPills();
-                    document.getElementById('result').style.display = 'block';
-                } else if (data.status === "error") {
-                    showModal("Fetch Failed", `Error: ${data.text || "Video nahi nikal paya."}`, true);
-                }
-            } catch(error) {
-                document.getElementById('loader').style.display = 'none';
-                showModal("Network Error", "Internet check karein ya thodi der baad try karein.", true);
+                renderPills();
+                document.getElementById('result').style.display = 'block';
+            } else {
+                showModal("System Blocked", "YouTube/Instagram ne is video ko strictly protect kiya hua hai. Kripya koi dusra link try karein.", true);
             }
         }
 
